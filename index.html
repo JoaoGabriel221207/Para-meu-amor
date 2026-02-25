@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nossa História</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            font-family: 'Montserrat', sans-serif;
+            background: #0a0a0f;
+            color: #e8e6f0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            touch-action: pan-y;
+        }
+
+        /* Fundo gradiente sutil */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 80%, rgba(88, 28, 135, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(59, 7, 100, 0.1) 0%, transparent 50%),
+                        linear-gradient(180deg, #0a0a0f 0%, #0f0a1a 100%);
+            z-index: 0;
+        }
+
+        /* Container principal */
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tela inicial */
+        .intro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 100;
+            background: #0a0a0f;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .intro-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .intro-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 300;
+            font-style: italic;
+            color: #d4b5e0;
+            margin-bottom: 15px;
+            opacity: 0;
+            animation: fadeIn 1.5s ease forwards;
+            letter-spacing: 1px;
+        }
+
+        .intro-date {
+            font-size: 0.85rem;
+            color: #6b6b7b;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+            opacity: 0;
+            animation: fadeIn 1.5s ease 0.3s forwards;
+        }
+
+        .start-hint {
+            font-size: 0.75rem;
+            color: #4a4a5a;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: fadeIn 1.5s ease 0.6s forwards;
+            margin-top: 20px;
+        }
+
+        .start-btn {
+            background: transparent;
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            color: #a78bfa;
+            padding: 18px 50px;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            opacity: 0;
+            animation: fadeIn 1.5s ease 0.6s forwards;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 300;
+        }
+
+        .start-btn:hover, .start-btn:active {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: rgba(147, 51, 234, 0.5);
+            letter-spacing: 4px;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Área do álbum */
+        .album-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Slides */
+        .slides-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 90%;
+            max-width: 500px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
+        }
+
+        .slide.prev {
+            opacity: 0;
+            transform: translateX(-30px) scale(0.95);
+        }
+
+        .slide.next {
+            opacity: 0;
+            transform: translateX(30px) scale(0.95);
+        }
+
+        /* Card da foto */
+        .photo-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(147, 51, 234, 0.15);
+            border-radius: 16px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, #12121a 0%, #0a0a12 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            border: 1px solid rgba(147, 51, 234, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 50%;
+        }
+
+        .photo-placeholder::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 15px;
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 50%;
+        }
+
+        .photo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .photo-placeholder img.loaded {
+            opacity: 1;
+        }
+
+        .photo-caption {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: #c4b5e0;
+            text-align: center;
+            line-height: 1.5;
+            font-style: italic;
+            font-weight: 300;
+            margin-bottom: 12px;
+        }
+
+        .photo-date {
+            font-size: 0.7rem;
+            color: #5a5a6a;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .highlight {
+            color: #a78bfa;
+            font-weight: 400;
+        }
+
+        /* Indicadores */
+        .indicators {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 50;
+        }
+
+        .indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+            background: rgba(147, 51, 234, 0.6);
+            width: 20px;
+            border-radius: 3px;
+        }
+
+        /* Contador de tempo */
+        .time-display {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            text-align: right;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .time-display.visible {
+            opacity: 1;
+        }
+
+        .time-label {
+            font-size: 0.6rem;
+            color: #5a5a6a;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .time-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: #8b7aa0;
+            font-weight: 300;
+        }
+
+        /* Controle de música */
+        .music-control {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            cursor: pointer;
+        }
+
+        .music-control.visible {
+            opacity: 1;
+        }
+
+        .music-icon {
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #7c6f9a;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .music-control:hover .music-icon {
+            border-color: rgba(147, 51, 234, 0.4);
+            color: #a78bfa;
+        }
+
+        .music-control.playing .music-icon {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.2); }
+            50% { box-shadow: 0 0 0 8px rgba(147, 51, 234, 0); }
+        }
+
+        /* Instrução de swipe */
+        .swipe-hint {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: #4a4a5a;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .swipe-hint.visible {
+            opacity: 1;
+            animation: fadeHint 3s ease forwards;
+        }
+
+        @keyframes fadeHint {
+            0%, 80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Responsivo */
+        @media (max-width: 480px) {
+            .intro-title {
+                font-size: 2.2rem;
+            }
+
+            .photo-caption {
+                font-size: 1.2rem;
+            }
+
+            .photo-card {
+                padding: 20px;
+            }
+
+            .time-display {
+                top: 20px;
+                right: 20px;
+            }
+
+            .music-control {
+                top: 20px;
+                left: 20px;
+            }
+        }
+
+        /* Efeito de partículas sutis */
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: rgba(147, 51, 234, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- Fundo -->
+    <div class="bg-gradient"></div>
+
+    <!-- Partículas -->
+    <div id="particles"></div>
+
+    <!-- Controle de música -->
+    <div class="music-control" id="musicControl">
+        <div class="music-icon" id="musicIcon">🎵</div>
+    </div>
+
+    <!-- Contador de tempo -->
+    <div class="time-display" id="timeDisplay">
+        <div class="time-label">Desde 21.06.2025</div>
+        <div class="time-value" id="timeValue">...</div>
+    </div>
+
+    <!-- Container -->
+    <div class="container">
+        <!-- Tela inicial -->
+        <div class="intro-screen" id="introScreen">
+            <h1 class="intro-title">Nossa História</h1>
+            <p class="intro-date">A partir do dia em que te vi</p>
+            <button class="start-btn" id="startBtn">Começar</button>
+            <p class="start-hint">Toque para iniciar a música</p>
+        </div>
+
+        <!-- Álbum -->
+        <div class="album-container" id="albumContainer">
+            <div class="slides-wrapper" id="slidesWrapper">
+
+                <!-- Slide 1 -->
+                <div class="slide active" data-index="0">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto1.jpg" alt="Primeiro encontro" loading="eager">
+                        </div>
+                        <p class="photo-caption">
+                            "Tudo começou quando vi aquela <span class="highlight">moça bonita</span>..."
+                        </p>
+                        <p class="photo-date">21 de Junho, 2025</p>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="slide" data-index="1">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto2.jpg" alt="Momento" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Cada segundo ao seu lado me faz acreditar no destino."
+                        </p>
+                        <p class="photo-date">Primeiras conversas</p>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="slide" data-index="2">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto3.jpg" alt="Namoro" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "E então, no dia 10 de agosto, oficialmente roubei seu coração..."
+                        </p>
+                        <p class="photo-date">10 de Agosto, 2025</p>
+                    </div>
+                </div>
+
+                <!-- Slide 4 -->
+                <div class="slide" data-index="3">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto4.jpg" alt="Olhares" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Seus olhos são meu lugar favorito no mundo."
+                        </p>
+                        <p class="photo-date">Olhares que dizem tudo</p>
+                    </div>
+                </div>
+
+                <!-- Slide 5 -->
+                <div class="slide" data-index="4">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto5.jpg" alt="Abraços" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Nos seus braços encontrei minha casa."
+                        </p>
+                        <p class="photo-date">Abraços que curam</p>
+                    </div>
+                </div>
+
+                <!-- Slide 6 -->
+                <div class="slide" data-index="5">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto6.jpg" alt="Aventuras" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Cada aventura ao seu lado é uma página nova na nossa história."
+                        </p>
+                        <p class="photo-date">Aventuras juntos</p>
+                    </div>
+                </div>
+
+                <!-- Slide 7 -->
+                <div class="slide" data-index="6">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto7.jpg" alt="Sorrisos" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Seu sorriso ilumina meus dias mais escuros."
+                        </p>
+                        <p class="photo-date">Sorrisos guardados</p>
+                    </div>
+                </div>
+
+                <!-- Slide 8 -->
+                <div class="slide" data-index="7">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto8.jpg" alt="Noites" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Conversas até de madrugada, porque perder o sono com você vale a pena."
+                        </p>
+                        <p class="photo-date">Noites inesquecíveis</p>
+                    </div>
+                </div>
+
+                <!-- Slide 9 -->
+                <div class="slide" data-index="8">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto9.jpg" alt="Detalhes" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Detalhes seus que me fazem sorrir sozinho durante o dia."
+                        </p>
+                        <p class="photo-date">Pequenas coisas, grandes amores</p>
+                    </div>
+                </div>
+
+                <!-- Slide 10 -->
+                <div class="slide" data-index="9">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto10.jpg" alt="Sonhos" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Planos, sonhos, e a certeza de que quero viver tudo com você."
+                        </p>
+                        <p class="photo-date">Sonhos compartilhados</p>
+                    </div>
+                </div>
+
+                <!-- Slide 11 -->
+                <div class="slide" data-index="10">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto11.jpg" alt="Transformação" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Seu amor me transformou em alguém melhor."
+                        </p>
+                        <p class="photo-date">Evolução juntos</p>
+                    </div>
+                </div>
+
+                <!-- Slide 12 -->
+                <div class="slide" data-index="11">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto12.jpg" alt="Silêncio" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Momentos de silêncio que falam mais que mil palavras."
+                        </p>
+                        <p class="photo-date">Conexão além das palavras</p>
+                    </div>
+                </div>
+
+                <!-- Slide 13 -->
+                <div class="slide" data-index="12">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto13.jpg" alt="Memórias" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Cada foto sua que guardo é um tesouro."
+                        </p>
+                        <p class="photo-date">Memórias eternizadas</p>
+                    </div>
+                </div>
+
+                <!-- Slide 14 -->
+                <div class="slide" data-index="13">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto14.jpg" alt="Resiliência" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Desafios que enfrentamos e que só nos fortaleceram."
+                        </p>
+                        <p class="photo-date">Resiliência do nosso amor</p>
+                    </div>
+                </div>
+
+                <!-- Slide 15 -->
+                <div class="slide" data-index="14">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto15.jpg" alt="Autenticidade" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Seu jeito único de ser que me encanta todos os dias."
+                        </p>
+                        <p class="photo-date">Autenticidade que amo</p>
+                    </div>
+                </div>
+
+                <!-- Slide 16 -->
+                <div class="slide" data-index="15">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto16.jpg" alt="Lugares" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "Lugares que visitamos e que ganharam significado pela sua presença."
+                        </p>
+                        <p class="photo-date">Nossos lugares especiais</p>
+                    </div>
+                </div>
+
+                <!-- Slide 17 -->
+                <div class="slide" data-index="16">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto17.jpg" alt="Futuro" loading="lazy">
+                        </div>
+                        <p class="photo-caption">
+                            "O futuro que imagino só faz sentido se você estiver nele."
+                        </p>
+                        <p class="photo-date">Promessas de amanhã</p>
+                    </div>
+                </div>
+
+                <!-- Slide 18 -->
+                <div class="slide" data-index="17">
+                    <div class="photo-card">
+                        <div class="photo-placeholder">
+                            <img src="foto18.jpg" alt="Final" loading="lazy">
+                        </div>
+                        <p class="photo-caption" style="font-size: 1.6rem;">
+                            "Essa <span class="highlight">moça bonita</span> se tornou minha pessoa favorita."
+                        </p>
+                        <p class="photo-date" style="margin-top: 15px;">Para sempre seu</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Indicadores -->
+        <div class="indicators" id="indicators"></div>
+
+        <!-- Hint de swipe -->
+        <div class="swipe-hint" id="swipeHint">Arraste para os lados</div>
+    </div>
+
+    <!-- Áudio - Música romântica melódica do Pixabay -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-piano-100-bpm-121529.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Variáveis
+        let currentSlide = 0;
+        const totalSlides = 18;
+        let isPlaying = false;
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let touchStartY = 0;
+
+        // Elementos
+        const introScreen = document.getElementById('introScreen');
+        const startBtn = document.getElementById('startBtn');
+        const slides = document.querySelectorAll('.slide');
+        const indicatorsContainer = document.getElementById('indicators');
+        const musicControl = document.getElementById('musicControl');
+        const musicIcon = document.getElementById('musicIcon');
+        const bgMusic = document.getElementById('bgMusic');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const swipeHint = document.getElementById('swipeHint');
+
+        // Criar partículas
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Criar indicadores
+        function createIndicators() {
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'indicator' + (i === 0 ? ' active' : '');
+                indicatorsContainer.appendChild(dot);
+            }
+        }
+        createIndicators();
+
+        const indicators = document.querySelectorAll('.indicator');
+
+        // Atualizar slide
+        function updateSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active', 'prev', 'next');
+                if (i === index) {
+                    slide.classList.add('active');
+                } else if (i < index) {
+                    slide.classList.add('prev');
+                } else {
+                    slide.classList.add('next');
+                }
+            });
+
+            indicators.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+
+            currentSlide = index;
+        }
+
+        // Próximo slide
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                updateSlide(currentSlide + 1);
+            }
+        }
+
+        // Slide anterior
+        function prevSlide() {
+            if (currentSlide > 0) {
+                updateSlide(currentSlide - 1);
+            }
+        }
+
+        // Controle de música
+        function toggleMusic() {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicIcon.textContent = '🔇';
+                musicControl.classList.remove('playing');
+            } else {
+                bgMusic.volume = 0.4;
+                bgMusic.play().catch(e => console.log('Audio play failed'));
+                musicIcon.textContent = '🎵';
+                musicControl.classList.add('playing');
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Contador de tempo
+        function updateTime() {
+            const start = new Date('2025-06-21T00:00:00');
+            const now = new Date();
+            const diff = now - start;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+            document.getElementById('timeValue').textContent = `${days} dias`;
+        }
+
+        // Iniciar
+        function startAlbum() {
+            introScreen.classList.add('hidden');
+            timeDisplay.classList.add('visible');
+            musicControl.classList.add('visible');
+            swipeHint.classList.add('visible');
+
+            // Tocar música automaticamente
+            bgMusic.volume = 0.4;
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                musicIcon.textContent = '🎵';
+                musicControl.classList.add('playing');
+            }).catch(e => {
+                // Se autoplay bloqueado, usuário pode clicar no ícone
+                console.log('Autoplay blocked');
+            });
+
+            updateTime();
+            setInterval(updateTime, 60000);
+
+            // Esconder hint após 4 segundos
+            setTimeout(() => {
+                swipeHint.classList.remove('visible');
+            }, 4000);
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startAlbum);
+        musicControl.addEventListener('click', toggleMusic);
+
+        // Touch events para swipe
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const touchEndY = e.changedTouches[0].screenY;
+
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+
+            // Só processa se o movimento horizontal for maior que o vertical
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }, { passive: true });
+
+        // Mouse events para desktop (drag)
+        let isDragging = false;
+        let mouseStartX = 0;
+
+        document.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            mouseStartX = e.screenX;
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const diff = mouseStartX - e.screenX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        });
+
+        // Prevenir menu de contexto nas imagens
+        document.addEventListener('contextmenu', (e) => {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+            }
+        });
+
+        // Carregar imagens
+        document.querySelectorAll('.photo-placeholder img').forEach(img => {
+            img.addEventListener('load', function() {
+                this.classList.add('loaded');
+            });
+            if (img.complete) {
+                img.classList.add('loaded');
+            }
+        });
+    </script>
+</body>
+</html>
